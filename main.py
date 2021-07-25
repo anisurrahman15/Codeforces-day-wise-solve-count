@@ -4,55 +4,42 @@ import sys
 import bs4
 import requests
 import argparse
-import sys
 import os
 import pandas as pd
 import time
-from datetime import datetime
-date = []
+from datetime import datetime as kk
+import datetime
 ls=[]
-solve_cnt=[]
 mydict={}
 def convert_date():
+    yy = int(input("\n\tENTER YOUR YEAR: \n"))
+    d1 = datetime.date(yy, 1, 1)
+    d2 = datetime.date(yy, 12, 31)
+    days = [d1 + datetime.timedelta(days=x) for x in range((d2 - d1).days + 1)]
+    for day in days:
+        cur=str(day.year)+str(day.month)+str(day.day)
+        mydict[cur]=0
+
     ls.reverse()
-    pre=-1
-    cnt=0
-    rem=ls[0]
-    yy=int(input("\n\tENTER YOUR YEAR: "))
-
     for timestamp in ls:
-        a = datetime.fromtimestamp(timestamp)
-        if a.year==yy:
-            if a.day==pre or pre==-1:
-                cnt=cnt+1
-            else:
-                m = str(rem.month)
-                d = str(rem.day)
-                ss=m+' '+d
-                mydict[ss]=cnt
-                cnt=1
-            pre=a.day
-            rem=a
+        day = kk.fromtimestamp(timestamp)
+        if day.year == yy:
+            cur =str(day.year)+str(day.month)+str(day.day)
+            mydict[cur]+=1
 
-    tot=0
-    for k, v in mydict.items():
-        print(k, v)
-        tot += int(v)
-
-    print("\n\ttotal solve: ", tot)
+    for value in mydict.values():
+        print(value)
 
 def get_sub_time():
-
-    json_data=requests.get('https://codeforces.com/api/user.status?handle=SU_N_NY').json()
-    res=json_data['result']
-    prev_pb = ''
-    cur_pb = ''
+    json_data = requests.get('https://codeforces.com/api/user.status?handle=SU_N_NY').json()
+    res = json_data['result']
+    rem=[]
     for i in res:
         if i['verdict'] == 'OK':
-            cur_pb = i['problem']['name']
-            if cur_pb != prev_pb:
+            if rem.count(i['problem']['name'])==0:
                 ls.append(i['creationTimeSeconds'])
-                prev_pb = i['problem']['name']
+                rem.append(i['problem']['name'])
 
 get_sub_time()
 convert_date()
+
